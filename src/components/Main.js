@@ -1,0 +1,169 @@
+'use client'
+
+import { useState, useEffect } from "react";
+import CenteredDiv from "./CenteredDiv";
+import GameScreen1 from "./GameScreen";
+import GameScreen2 from "./GameScreen";
+
+export default function Main() {
+    const [width, setWidth] = useState(1334);
+    const [height, setHeight] = useState(750);
+    
+    // Main Screen
+    const [MSLeft, setMSLeft] = useState(0);
+    const [MSTop, setMSTop] = useState(0);    
+    const [MSWidth, setMSWidth] = useState(0);
+    const [MSHeight, setMSHeight] = useState(0);   
+    // Second Screen
+    const [SSLeft, setSSLeft] = useState(0);    
+    const [SSTop, setSSTop] = useState(0);
+    const [SSWidth, setSSWidth] = useState(0);
+    const [SSHeight, setSSHeight] = useState(0);      
+
+    const [percent, setPercent] = useState(60);
+
+    const [inputText, setInputText] = useState('');
+    const [outputText, setOutputText] = useState(''); 
+    
+    const [convertedObject, setConvertedObject] = useState({});
+    const [resultingObject, setResultingObject] = useState({});
+
+    useEffect(() => {
+        loadCustomLayout();
+    },[convertedObject]);
+    
+    useEffect(() => {resultingObject.custom_top_left = MSLeft},[MSLeft]);
+    useEffect(() => {resultingObject.custom_top_top = MSTop},[MSTop]);
+    useEffect(() => {resultingObject.custom_top_right = parseInt(MSLeft)+parseInt(MSWidth)},[MSWidth,MSLeft]);
+    useEffect(() => {resultingObject.custom_top_bottom = parseInt(MSTop)+parseInt(MSHeight)},[MSHeight,MSTop]);
+
+    useEffect(() => {resultingObject.custom_bottom_left = SSLeft},[SSLeft]);
+    useEffect(() => {resultingObject.custom_bottom_top = SSTop},[SSTop]);
+    useEffect(() => {resultingObject.custom_bottom_right = parseInt(SSLeft)+parseInt(SSWidth)},[SSWidth,SSLeft]);
+    useEffect(() => {resultingObject.custom_bottom_bottom = parseInt(SSTop)+parseInt(SSHeight)},[SSHeight,SSTop]);            
+
+    const handleConvertClick = () => {
+        try {
+            // Converter o texto de entrada em um objeto JavaScript
+            const keyValuePairs = inputText.split('\n').map(line => {
+            const [key, value] = line.split('=').map(item => item.trim());
+            return { [key]: parseInt(value) };
+            });
+            
+            const cObj = Object.assign({}, ...keyValuePairs);
+            
+            setConvertedObject(cObj);
+        } catch (error) {
+            setOutputText('Erro na conversão.');
+        }
+    };
+
+    function loadCustomLayout() {
+        setMSLeft(convertedObject.custom_top_left);
+        setMSTop(convertedObject.custom_top_top);
+        setMSWidth(convertedObject.custom_top_right-convertedObject.custom_top_left);
+        setMSHeight(convertedObject.custom_top_bottom-convertedObject.custom_top_top);
+
+        setSSLeft(convertedObject.custom_bottom_left);
+        setSSTop(convertedObject.custom_bottom_top);
+        setSSWidth(convertedObject.custom_bottom_right-convertedObject.custom_bottom_left);
+        setSSHeight(convertedObject.custom_bottom_bottom-convertedObject.custom_bottom_top);
+    }
+
+    function saveCustomLayout() {
+        setOutputText("");        
+
+        let sObj = Object.entries(resultingObject).map(([chave, valor]) => `${chave}=${valor}`).join('\n');
+
+        setOutputText(sObj);        
+    }
+
+    const handleCopyToClipboard = () => {
+        navigator.clipboard.writeText(outputText);
+    };
+
+    return (
+        <main class="flex min-h-screen flex-col items-center bg-gray-700">
+            <div class="flex w-full bg-gray-600 shadow drop-shadow-md">
+                <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
+                    <p class="mb-2 text-center">Input</p>
+                    <textarea class="text-black rounded h-48 w-64 resize-none" rows="10" cols="40"
+                        placeholder="paste custom layout here" value={inputText} onChange={(e) => setInputText(e.target.value)}
+                    />                    
+                </div>
+                <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow my-24 w-24" onClick={handleConvertClick}>Load</button>                
+                <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
+                    <p class="mb-2 text-center">Device Resolution</p>
+                    <div class="mb-2 flex flex-row">
+                        <p class="w-16 p-1">Width</p>
+                        <input class="rounded p-1 text-black" type="number" value={width} onChange={(e) => setWidth(e.target.value)}/>
+                    </div>
+                    <div class=" flex flex-row">
+                        <p class="w-16 p-1">Height</p>
+                        <input class="rounded p-1 text-black" type="number" value={height} onChange={(e) => setHeight(e.target.value)}/>                
+                    </div>
+                </div>
+
+                <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
+                    <p class="mb-2 text-center rounded-lg bg-blue-500">First Screen</p>
+                    <div class="mb-2  flex flex-row">
+                        <p class="w-16 p-1">Left</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={MSLeft} onChange={(e) => setMSLeft(e.target.value)}/>                
+                    </div>                    
+                    <div class="mb-2 flex flex-row">
+                        <p class="w-16 p-1">Top</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={MSTop} onChange={(e) => setMSTop(e.target.value)}/>
+                    </div>
+                    <div class="mb-2  flex flex-row">
+                        <p class="w-16 p-1">Width</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={MSWidth} onChange={(e) => setMSWidth(e.target.value)}/>                
+                    </div>                    
+                    <div class=" flex flex-row">
+                        <p class="w-16 p-1">Height</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={MSHeight} onChange={(e) => setMSHeight(e.target.value)}/>                
+                    </div>                      
+                </div>
+
+                <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
+                    <p class="mb-2 text-center rounded-lg bg-red-500">Second Screen</p>
+                    <div class="mb-2  flex flex-row">
+                        <p class="w-16 p-1">Left</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={SSLeft} onChange={(e) => setSSLeft(e.target.value)}/>                
+                    </div>                    
+                    <div class="mb-2 flex flex-row">
+                        <p class="w-16 p-1">Top</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={SSTop} onChange={(e) => setSSTop(e.target.value)}/>
+                    </div>
+                    <div class="mb-2  flex flex-row">
+                        <p class="w-16 p-1">Width</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={SSWidth} onChange={(e) => setSSWidth(e.target.value)}/>                
+                    </div>                    
+                    <div class=" flex flex-row">
+                        <p class="w-16 p-1">Height</p>
+                        <input class="rounded p-1 text-black w-36" type="number" value={SSHeight} onChange={(e) => setSSHeight(e.target.value)}/>                
+                    </div>                      
+                </div>
+                <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow my-24 w-24" onClick={saveCustomLayout}>Prepare</button>
+                <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
+                    <p class="mb-2 text-center">Output</p>
+                    <textarea class="text-black rounded h-48 w-64 resize-none bg-gray-100" readOnly="true" rows="10" cols="40"
+                        placeholder="paste custom layout here" value={outputText}/>
+                    <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow mx-1" onClick={handleCopyToClipboard}>Clipboard</button>
+                    
+                </div>
+            </div>
+            <div class="flex flex-row m-4">
+                <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow mx-2" onClick={() => {setPercent(percent-1)}}>-</button>
+                <p>{percent} %</p>
+                <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow mx-2" onClick={() => {setPercent(percent+1)}}>+</button>
+            </div>
+            <div>
+                <CenteredDiv width={width*(percent/100)} height={height*(percent/100)} >
+                    <GameScreen1 className={"bg-blue-500"} width={MSWidth*(percent/100)} height={MSHeight*(percent/100)} marginTop={MSTop*(percent/100)} marginLeft={MSLeft*(percent/100)} />    
+                    <GameScreen2 className={"bg-red-500"} width={SSWidth*(percent/100)} height={SSHeight*(percent/100)} marginTop={SSTop*(percent/100)} marginLeft={SSLeft*(percent/100)} />    
+                </CenteredDiv>
+                
+            </div>
+        </main>
+    )
+}
