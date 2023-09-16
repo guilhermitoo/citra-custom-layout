@@ -6,8 +6,8 @@ import GameScreen1 from "./GameScreen";
 import GameScreen2 from "./GameScreen";
 
 export default function Main() {
-    const [width, setWidth] = useState(1334);
-    const [height, setHeight] = useState(750);
+    const [width, setWidth] = useState(0);
+    const [height, setHeight] = useState(0);
     
     // Main Screen
     const [MSLeft, setMSLeft] = useState(0);
@@ -27,6 +27,85 @@ export default function Main() {
     
     const [convertedObject, setConvertedObject] = useState({});
     const [resultingObject, setResultingObject] = useState({});
+
+    const [selectedResolution, setSelectedResolution] = useState(-1);
+    const [selectedLayout, setSelectedLayout] = useState(-1);
+
+    const resolutions = [{width: 1280, height: 720, percent: 60},
+                         {width: 1280, height: 800, percent: 65},
+                         {width: 1344, height: 750, percent: 65},
+                         {width: 1920, height: 1080,percent: 50},
+                         {width: 3840, height: 2160,percent: 28}];
+
+    useEffect(() => {
+        if (selectedResolution == -1) {
+            setSelectedResolution(0);
+        }
+    },[]);
+
+    useEffect(() => {
+        if (selectedResolution == -1) {
+            return
+        }
+        if (resolutions[selectedResolution].hasOwnProperty("width")) {
+            setWidth(resolutions[selectedResolution].width);
+            setHeight(resolutions[selectedResolution].height);
+            setPercent(resolutions[selectedResolution].percent);
+        }
+    },[selectedResolution]);    
+
+    useEffect(() => {
+        if (selectedLayout == -1) {
+            return
+        }
+        switch (selectedLayout) {
+            case "0":
+                configureSideBySide();
+                break;
+            case "1":
+                configureTopBottom();
+                break;
+            case "2":
+                configureBigSmall();
+                break;
+        }
+    },[selectedLayout]);    
+
+    function configureSideBySide() {
+        setMSWidth(parseInt(width/2));
+        setMSHeight(parseInt(height/2));
+        setMSLeft(0);
+        setMSTop(parseInt(height/4));
+
+        setSSWidth(parseInt(width/2));
+        setSSHeight(parseInt(height/2));
+        setSSLeft(parseInt(width/2));
+        setSSTop(parseInt(height/4));
+    }
+
+    function configureTopBottom() {
+        setMSWidth(parseInt(width/2));
+        setMSHeight(parseInt(height/2));
+        setMSLeft(parseInt(width/4));
+        setMSTop(0);
+
+        setSSWidth(parseInt(width/2));
+        setSSHeight(parseInt(height/2));
+        setSSLeft(parseInt(width/4));
+        setSSTop(parseInt(height/2));
+    }
+
+    function configureBigSmall() {
+        setMSWidth(parseInt(width/1.5));
+        setMSHeight(parseInt(height/1.2));
+        setMSLeft(0);
+        setMSTop(parseInt(height/7));
+
+        setSSWidth(parseInt(width/3));
+        setSSHeight(parseInt(height/2));
+        setSSLeft(parseInt(width/1.5));
+        setSSTop(parseInt(height/2.11));
+    }
 
     useEffect(() => {
         loadCustomLayout();
@@ -95,12 +174,37 @@ export default function Main() {
                 <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
                     <p class="mb-2 text-center">Device Resolution</p>
                     <div class="mb-2 flex flex-row">
-                        <p class="w-16 p-1">Width</p>
-                        <input class="rounded p-1 text-black" type="number" value={width} onChange={(e) => setWidth(e.target.value)}/>
+                        <p class="w-24 p-1">Resolution</p>
+                        <select class="rounded p-1 text-black w-48"
+                            id="resolutionSelect"
+                            value={selectedResolution}
+                            onChange={(e) => setSelectedResolution(e.target.value)}>
+                            <option value="0">HD (1280 x 720)</option>
+                            <option value="1">SteamDeck (1280 x 800)</option>
+                            <option value="2">RP3+ (1344 x 750)</option>
+                            <option value="3">Full HD (1920 x 1080)</option>
+                            <option value="4">4K (3840 x 2160)</option>
+                        </select>
+                    </div>
+                    <div class="mb-2 flex flex-row">
+                        <p class="w-24 p-1">Layouts</p>
+                        <select class="rounded p-1 text-black w-48"
+                            id="resolutionSelect"
+                            value={selectedLayout}
+                            onChange={(e) => setSelectedLayout(e.target.value)}>
+                            <option value="-1">Select...</option>
+                            <option value="0">Side-by-Side</option>
+                            <option value="1">Top-Bottom</option>
+                            <option value="2">Big and Small</option>
+                        </select>
+                    </div>                    
+                    <div class="mb-2 flex flex-row">
+                        <p class="w-24 p-1">Width</p>
+                        <input class="rounded p-1 text-black w-48" type="number" value={width} onChange={(e) => setWidth(e.target.value)}/>
                     </div>
                     <div class=" flex flex-row">
-                        <p class="w-16 p-1">Height</p>
-                        <input class="rounded p-1 text-black" type="number" value={height} onChange={(e) => setHeight(e.target.value)}/>                
+                        <p class="w-24 p-1">Height</p>
+                        <input class="rounded p-1 text-black w-48" type="number" value={height} onChange={(e) => setHeight(e.target.value)}/>                
                     </div>
                 </div>
 
@@ -147,7 +251,7 @@ export default function Main() {
                 <div class="w-auto h-auto p-2 m-2 border-2 rounded-lg border-gray-400">
                     <p class="mb-2 text-center">Output</p>
                     <textarea class="text-black rounded h-48 w-64 resize-none bg-gray-100" readOnly="true" rows="10" cols="40"
-                        placeholder="paste custom layout here" value={outputText}/>
+                        placeholder="result." value={outputText}/>
                     <button class="bg-gray-500 px-2 hover:bg-gray-400 cursor-pointer rounded drop-shadow mx-1" onClick={handleCopyToClipboard}>Clipboard</button>
                     
                 </div>
